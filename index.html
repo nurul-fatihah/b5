@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width,
+        initial-scale=1.0,
+        maximum-scale=1.0,
+        user-scalable=no">
+
+    <title>Interactive WebAR Solar Panel</title>
+
+
+    <!-- =============================== -->
+    <!-- A-FRAME LIBRARY                 -->
+    <!-- =============================== -->
+
+    <script
+        src="https://aframe.io/releases/1.6.0/aframe.min.js">
+    </script>
+
+
+    <!-- =============================== -->
+    <!-- AR.JS MARKER TRACKING LIBRARY   -->
+    <!-- =============================== -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.7/aframe/build/aframe-ar.js">
+    </script>
+
+
+    <style>
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: black;
+        }
+
+
+        /* ========================== */
+        /* TOP INSTRUCTION            */
+        /* ========================== */
+
+        #instruction {
+
+            position: fixed;
+
+            top: 10px;
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            width: 88%;
+            max-width: 500px;
+
+            padding: 10px;
+
+            color: white;
+            background: rgba(0, 0, 0, 0.72);
+
+            border-radius: 8px;
+
+            text-align: center;
+            font-size: 14px;
+
+            z-index: 20;
+        }
+
+
+        /* ========================== */
+        /* CONTROL PANEL              */
+        /* ========================== */
+
+        #controlPanel {
+
+            position: fixed;
+
+            left: 50%;
+            bottom: 10px;
+
+            transform: translateX(-50%);
+
+            width: 90%;
+            max-width: 480px;
+
+            padding: 10px;
+
+            background: rgba(0, 0, 0, 0.78);
+            color: white;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+
+            z-index: 20;
+        }
+
+
+        .control-title {
+
+            margin-bottom: 8px;
+
+            text-align: center;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+
+        .slider-row {
+
+            display: flex;
+            align-items: center;
+
+            gap: 8px;
+
+            margin: 5px 0;
+        }
+
+
+        .slider-row label {
+
+            width: 65px;
+        }
+
+
+        .slider-row input[type="range"] {
+
+            flex: 1;
+        }
+
+
+        .slider-value {
+
+            width: 42px;
+
+            text-align: right;
+        }
+
+
+        .button-row {
+
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+
+            gap: 5px;
+
+            margin-top: 7px;
+        }
+
+
+        button {
+
+            min-width: 55px;
+
+            padding: 7px 9px;
+
+            border: none;
+            border-radius: 5px;
+
+            background: #1976d2;
+            color: white;
+
+            font-size: 12px;
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+
+        button:active {
+
+            background: #0d47a1;
+        }
+
+
+        .reset-button {
+
+            background: #d32f2f;
+        }
+
+
+        .reset-button:active {
+
+            background: #8b0000;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =============================== -->
+    <!-- USER INSTRUCTION                -->
+    <!-- =============================== -->
+
+    <div id="instruction">
+
+        Allow camera access and point the camera
+        towards the Hiro marker.
+
+    </div>
+
+
+    <!-- =============================== -->
+    <!-- INTERACTIVE CONTROL PANEL       -->
+    <!-- =============================== -->
+
+    <div id="controlPanel">
+
+        <div class="control-title">
+
+            Solar Panel Controls
+
+        </div>
+
+
+        <!-- Size control -->
+
+        <div class="slider-row">
+
+            <label for="scaleControl">
+                Size
+            </label>
+
+            <input
+                id="scaleControl"
+                type="range"
+                min="0.10"
+                max="1.00"
+                step="0.05"
+                value="0.35">
+
+            <span
+                id="scaleValue"
+                class="slider-value">
+
+                0.35
+
+            </span>
+
+        </div>
+
+
+        <!-- Horizontal rotation control -->
+
+        <div class="slider-row">
+
+            <label for="rotateControl">
+                Rotate
+            </label>
+
+            <input
+                id="rotateControl"
+                type="range"
+                min="-180"
+                max="180"
+                step="5"
+                value="0">
+
+            <span
+                id="rotateValue"
+                class="slider-value">
+
+                0°
+
+            </span>
+
+        </div>
+
+
+        <!-- Tilt control -->
+
+        <div class="slider-row">
+
+            <label for="tiltControl">
+                Tilt
+            </label>
+
+            <input
+                id="tiltControl"
+                type="range"
+                min="-90"
+                max="90"
+                step="5"
+                value="0">
+
+            <span
+                id="tiltValue"
+                class="slider-value">
+
+                0°
+
+            </span>
+
+        </div>
+
+
+        <!-- Position controls -->
+
+        <div class="button-row">
+
+            <button onclick="moveModel('left')">
+                ← Left
+            </button>
+
+            <button onclick="moveModel('right')">
+                Right →
+            </button>
+
+            <button onclick="moveModel('forward')">
+                Forward
+            </button>
+
+            <button onclick="moveModel('backward')">
+                Back
+            </button>
+
+        </div>
+
+
+        <!-- Height controls -->
+
+        <div class="button-row">
+
+            <button onclick="moveModel('raise')">
+                Raise
+            </button>
+
+            <button onclick="moveModel('lower')">
+                Lower
+            </button>
+
+            <button
+                class="reset-button"
+                onclick="resetModel()">
+
+                Reset
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =============================== -->
+    <!-- AR SCENE                        -->
+    <!-- =============================== -->
+
+    <a-scene
+
+        embedded
+
+        vr-mode-ui="enabled: false"
+
+        renderer="
+            logarithmicDepthBuffer: true;
+            colorManagement: true;
+            physicallyCorrectLights: true;
+        "
+
+        arjs="
+            sourceType: webcam;
+            trackingMethod: best;
+            debugUIEnabled: false;
+        ">
+
+
+        <!-- =========================== -->
+        <!-- LIGHTING                    -->
+        <!-- =========================== -->
+
+        <a-light
+
+            type="ambient"
+
+            color="#FFFFFF"
+
+            intensity="1.2">
+
+        </a-light>
+
+
+        <a-light
+
+            type="directional"
+
+            color="#FFFFFF"
+
+            intensity="1.5"
+
+            position="1 3 2">
+
+        </a-light>
+
+
+        <!-- =========================== -->
+        <!-- HIRO MARKER                 -->
+        <!-- =========================== -->
+
+        <a-marker preset="hiro">
+
+
+            <!-- ======================= -->
+            <!-- COMPLETE MODEL ROOT     -->
+            <!-- ======================= -->
+
+            <a-entity
+
+                id="modelRoot"
+
+                position="0 0 0"
+
+                rotation="0 0 0"
+
+                scale="0.35 0.35 0.35">
+
+
+                <!-- =================== -->
+                <!-- STRUCTURE BASE      -->
+                <!-- =================== -->
+
+                <a-box
+
+                    id="base"
+
+                    position="0 0.05 0"
+
+                    width="3.2"
+
+                    height="0.10"
+
+                    depth="2.2"
+
+                    color="#4F565D"
+
+                    roughness="0.8">
+
+                </a-box>
+
+
+                <!-- =================== -->
+                <!-- SUPPORT POSTS       -->
+                <!-- =================== -->
+
+                <a-box
+
+                    id="leftPost"
+
+                    position="-0.90 0.75 0"
+
+                    width="0.16"
+
+                    height="1.40"
+
+                    depth="0.16"
+
+                    color="#AEB4BA"
+
+                    metalness="0.5"
+
+                    roughness="0.5">
+
+                </a-box>
+
+
+                <a-box
+
+                    id="rightPost"
+
+                    position="0.90 0.75 0"
+
+                    width="0.16"
+
+                    height="1.40"
+
+                    depth="0.16"
+
+                    color="#AEB4BA"
+
+                    metalness="0.5"
+
+                    roughness="0.5">
+
+                </a-box>
+
+
+                <!-- =================== -->
+                <!-- CROSS BAR           -->
+                <!-- =================== -->
+
+                <a-box
+
+                    id="crossBar"
+
+                    position="0 1.42 0"
+
+                    width="2.10"
+
+                    height="0.14"
+
+                    depth="0.14"
+
+                    color="#8A9198"
+
+                    metalness="0.5"
+
+                    roughness="0.5">
+
+                </a-box>
+
+
+                <!-- =================== -->
+                <!-- TILTED SUPPORT RAILS -->
+                <!-- =================== -->
+
+                <a-box
+
+                    id="leftTiltRail"
+
+                    position="-0.90 1.48 0"
+
+                    rotation="-25 0 0"
+
+                    width="0.12"
+
+                    height="0.12"
+
+                    depth="1.55"
+
+                    color="#8A9198"
+
+                    metalness="0.5">
+
+                </a-box>
+
+
+                <a-box
+
+                    id="rightTiltRail"
+
+                    position="0.90 1.48 0"
+
+                    rotation="-25 0 0"
+
+                    width="0.12"
+
+                    height="0.12"
+
+                    depth="1.55"
+
+                    color="#8A9198"
+
+                    metalness="0.5">
+
+                </a-box>
+
+
+                <!-- =========================== -->
+                <!-- SOLAR PANEL ASSEMBLY        -->
+                <!-- =========================== -->
+
+                <a-entity
+
+                    id="panelAssembly"
+
+                    position="0 1.60 0"
+
+                    rotation="-25 0 0">
+
+
+                    <!-- Panel frame -->
+
+                    <a-box
+
+                        id="panelFrame"
+
+                        position="0 0 0"
+
+                        width="2.80"
+
+                        height="0.14"
+
+                        depth="1.70"
+
+                        color="#20252A"
+
+                        metalness="0.4"
+
+                        roughness="0.6">
+
+                    </a-box>
+
+
+                    <!-- Panel surface -->
+
+                    <a-box
+
+                        id="panelSurface"
+
+                        position="0 0.09 0"
+
+                        width="2.65"
+
+                        height="0.06"
+
+                        depth="1.55"
+
+                        color="#123A63"
+
+                        metalness="0.3"
+
+                        roughness="0.4">
+
+                    </a-box>
+
+
+                    <!-- =================== -->
+                    <!-- SOLAR CELL ROW 1    -->
+                    <!-- =================== -->
+
+                    <a-box
+                        position="-0.98 0.135 -0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+                    <a-box
+                        position="-0.33 0.135 -0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+                    <a-box
+                        position="0.33 0.135 -0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+                    <a-box
+                        position="0.98 0.135 -0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+
+                    <!-- =================== -->
+                    <!-- SOLAR CELL ROW 2    -->
+                    <!-- =================== -->
+
+                    <a-box
+                        position="-0.98 0.135 0"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1B82C5">
+                    </a-box>
+
+                    <a-box
+                        position="-0.33 0.135 0"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1B82C5">
+                    </a-box>
+
+                    <a-box
+                        position="0.33 0.135 0"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1B82C5">
+                    </a-box>
+
+                    <a-box
+                        position="0.98 0.135 0"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1B82C5">
+                    </a-box>
+
+
+                    <!-- =================== -->
+                    <!-- SOLAR CELL ROW 3    -->
+                    <!-- =================== -->
+
+                    <a-box
+                        position="-0.98 0.135 0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+                    <a-box
+                        position="-0.33 0.135 0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+                    <a-box
+                        position="0.33 0.135 0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+                    <a-box
+                        position="0.98 0.135 0.50"
+                        width="0.55"
+                        height="0.025"
+                        depth="0.42"
+                        color="#1674B8">
+                    </a-box>
+
+
+                </a-entity>
+
+
+                <!-- =================== -->
+                <!-- MODEL LABEL         -->
+                <!-- =================== -->
+
+                <a-text
+
+                    value="SOLAR PANEL"
+
+                    position="0 0.16 1.11"
+
+                    rotation="-90 0 0"
+
+                    align="center"
+
+                    color="#FFFFFF"
+
+                    width="3">
+
+                </a-text>
+
+
+            </a-entity>
+
+
+        </a-marker>
+
+
+        <!-- =========================== -->
+        <!-- AR CAMERA                   -->
+        <!-- =========================== -->
+
+        <a-entity camera></a-entity>
+
+
+    </a-scene>
+
+
+    <!-- =============================== -->
+    <!-- INTERACTION JAVASCRIPT          -->
+    <!-- =============================== -->
+
+    <script>
+
+        /*
+        Model default values
+        */
+
+        const defaultSettings = {
+
+            position: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+
+            rotation: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+
+            scale: 0.35
+
+        };
+
+
+        /*
+        Current model values
+        */
+
+        let modelPosition = {
+
+            x: defaultSettings.position.x,
+            y: defaultSettings.position.y,
+            z: defaultSettings.position.z
+
+        };
+
+
+        let modelRotation = {
+
+            x: defaultSettings.rotation.x,
+            y: defaultSettings.rotation.y,
+            z: defaultSettings.rotation.z
+
+        };
+
+
+        let modelScale =
+            defaultSettings.scale;
+
+
+        /*
+        Obtain HTML elements
+        */
+
+        const modelRoot =
+            document.querySelector("#modelRoot");
+
+
+        const scaleControl =
+            document.querySelector("#scaleControl");
+
+
+        const rotateControl =
+            document.querySelector("#rotateControl");
+
+
+        const tiltControl =
+            document.querySelector("#tiltControl");
+
+
+        const scaleValue =
+            document.querySelector("#scaleValue");
+
+
+        const rotateValue =
+            document.querySelector("#rotateValue");
+
+
+        const tiltValue =
+            document.querySelector("#tiltValue");
+
+
+        /*
+        Update the model
+        */
+
+        function updateModel() {
+
+            modelRoot.setAttribute(
+                "position",
+
+                modelPosition.x + " " +
+                modelPosition.y + " " +
+                modelPosition.z
+            );
+
+
+            modelRoot.setAttribute(
+                "rotation",
+
+                modelRotation.x + " " +
+                modelRotation.y + " " +
+                modelRotation.z
+            );
+
+
+            modelRoot.setAttribute(
+                "scale",
+
+                modelScale + " " +
+                modelScale + " " +
+                modelScale
+            );
+
+        }
+
+
+        /*
+        Size slider
+        */
+
+        scaleControl.addEventListener(
+            "input",
+
+            function () {
+
+                modelScale =
+                    Number(scaleControl.value);
+
+
+                scaleValue.textContent =
+                    modelScale.toFixed(2);
+
+
+                updateModel();
+
+            }
+        );
+
+
+        /*
+        Horizontal rotation slider
+        */
+
+        rotateControl.addEventListener(
+            "input",
+
+            function () {
+
+                modelRotation.y =
+                    Number(rotateControl.value);
+
+
+                rotateValue.textContent =
+                    modelRotation.y + "°";
+
+
+                updateModel();
+
+            }
+        );
+
+
+        /*
+        Tilt slider
+        */
+
+        tiltControl.addEventListener(
+            "input",
+
+            function () {
+
+                modelRotation.x =
+                    Number(tiltControl.value);
+
+
+                tiltValue.textContent =
+                    modelRotation.x + "°";
+
+
+                updateModel();
+
+            }
+        );
+
+
+        /*
+        Position control buttons
+        */
+
+        function moveModel(direction) {
+
+            const movement = 0.10;
+
+
+            if (direction === "left") {
+
+                modelPosition.x -= movement;
+
+            }
+
+
+            if (direction === "right") {
+
+                modelPosition.x += movement;
+
+            }
+
+
+            if (direction === "forward") {
+
+                modelPosition.z -= movement;
+
+            }
+
+
+            if (direction === "backward") {
+
+                modelPosition.z += movement;
+
+            }
+
+
+            if (direction === "raise") {
+
+                modelPosition.y += movement;
+
+            }
+
+
+            if (direction === "lower") {
+
+                modelPosition.y -= movement;
+
+            }
+
+
+            updateModel();
+
+        }
+
+
+        /*
+        Reset model
+        */
+
+        function resetModel() {
+
+            modelPosition = {
+
+                x: defaultSettings.position.x,
+                y: defaultSettings.position.y,
+                z: defaultSettings.position.z
+
+            };
+
+
+            modelRotation = {
+
+                x: defaultSettings.rotation.x,
+                y: defaultSettings.rotation.y,
+                z: defaultSettings.rotation.z
+
+            };
+
+
+            modelScale =
+                defaultSettings.scale;
+
+
+            scaleControl.value =
+                defaultSettings.scale;
+
+
+            rotateControl.value =
+                defaultSettings.rotation.y;
+
+
+            tiltControl.value =
+                defaultSettings.rotation.x;
+
+
+            scaleValue.textContent =
+                defaultSettings.scale.toFixed(2);
+
+
+            rotateValue.textContent =
+                defaultSettings.rotation.y + "°";
+
+
+            tiltValue.textContent =
+                defaultSettings.rotation.x + "°";
+
+
+            updateModel();
+
+        }
+
+
+        /*
+        Apply initial settings
+        */
+
+        updateModel();
+
+    </script>
+
+
+</body>
+
+</html>
